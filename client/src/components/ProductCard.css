@@ -1,0 +1,143 @@
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.product-price {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e63946;
+  margin-bottom: 8px;
+}
+
+.product-category {
+  font-size: 14px;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.product-explanation {
+  margin: 12px 0;
+  padding: 8px;
+  background-color: #f0f7ff;
+  border-left: 3px solid #4a90e2;
+  border-radius: 4px;
+}
+
+.product-description {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* Reviews specific styles */
+.product-reviews {
+  margin-top: 15px;
+  border-top: 1px dashed #e0e0e0;
+  padding-top: 12px;
+}
+
+.reviews-toggle {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.reviews-toggle:hover {
+  background-color: #e9ecef;
+}
+
+.reviews-section {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.review-summary p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.sentiment-bar-container {
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  margin: 5px 0 10px 0;
+  overflow: hidden;
+}
+
+.sentiment-bar {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.key-phrases, .usage-contexts {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.aspect-sentiments {
+  margin: 12px 0;
+}
+
+.aspects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.aspect-item {
+  margin-bottom: 8px;
+}
+
+.aspect-name {
+  font-size: 13px;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.representative-reviews {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.review-text {
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.5;
+  color: #666;
+  background-color: white;
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+} 

@@ -1,0 +1,23 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data files (if large or generated)
+data/fashion_products.jsonl
+data/Amazon_Fashion.jsonl
+data/reviews.json
+data/embeddings.json # If using local storage
+data/temp_batch_*.jsonl # Temporary files for uploads
+
+# MacOS system files
+.DS_Store
+
+# IDE settings
+.vscode/
+
+# Python virtual environment (if used)
+venv/
+.venv/ 
