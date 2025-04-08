@@ -30,7 +30,7 @@ class ProductItem(BaseModel):
     has_reviews: bool = False
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": "B07H2FQ6WT",
                 "parent_asin": "B07H2FQ6XX",

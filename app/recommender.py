@@ -9,8 +9,9 @@ from .products import get_product_by_id, ProductItem
 from .embeddings import get_embedding, search_similar_products
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+logger.debug("This is a test debug message from app/recommender.py.")
 
 # Global OpenAI client
 client = None
