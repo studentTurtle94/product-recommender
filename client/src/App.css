@@ -140,3 +140,36 @@ h1 {
   color: #6c757d;
   font-style: italic;
 }
+
+.image-preview-container {
+  /* Optional: Add some styling to the container */
+}
+
+.image-preview {
+  max-width: 50px; /* Limit width */
+  max-height: 50px; /* Limit height */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 4px; /* Optional: rounded corners */
+  object-fit: cover; /* Ensure image covers the area, might crop */
+  border: 1px solid #ddd; /* Optional: light border */
+}
+
+.file-name {
+  font-size: 0.85em;
+  color: #555;
+  /* Prevent long filenames from breaking layout */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* Adjust as needed */
+}
+
+/* Hide default file input, we use the label */
+#image-upload {
+  display: none;
+}
+
+/* Style the label like a button */
+.btn-outline-secondary {
+  cursor: pointer;
+}

@@ -1,13 +1,14 @@
 import os
 import json
 import logging
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
+from typing import List, Optional
 
 from .products import load_products, get_product_by_id, get_all_products, ProductItem
 from .embeddings import init_embedding_client, generate_product_embeddings, delete_all_vectors
-from .recommender import init_recommender, semantic_search, refine_recommendations
+from .recommender import init_recommender, semantic_search, refine_recommendations, multimodal_search
 from .reviews import get_review_summary
 
 # Configure logging
@@ -96,3 +97,32 @@ async def recommend(query: str, limit: int = Query(5, ge=1, le=10)):
     # Then, refine recommendations with LLM
     result = await refine_recommendations(query, products)
     return result
+
+@app.post("/multimodal-search")
+async def search_multimodal(
+    query_text: str = Form(...),
+    image_file: Optional[UploadFile] = File(None),
+    limit: int = Form(5)
+):
+    """Search for products using multimodal input (text + optional image)."""
+    if not image_file:
+        # Fallback to regular semantic search if no image is provided
+        logger.info("No image provided, falling back to text-based semantic search.")
+        products = await semantic_search(query=query_text, top_k=limit)
+        if not products:
+            return {"products": [], "message": "No products found matching your query"}
+        return {"products": products}
+
+    # Read image data
+    image_data = await image_file.read()
+    logger.info(f"Received image: {image_file.filename}, size: {len(image_data)} bytes, content-type: {image_file.content_type}")
+
+    # Perform multimodal search using the recommender function
+    products = await multimodal_search(query_text=query_text, image_data=image_data, top_k=limit)
+
+    if not products:
+        return {"products": [], "message": "No products found matching your multimodal query"}
+    
+    # TODO: Potentially add refinement step here as well if needed, similar to /recommend endpoint
+
+    return {"products": products}

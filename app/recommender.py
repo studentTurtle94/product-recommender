@@ -4,6 +4,7 @@ import json
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
 import numpy as np
+import base64
 
 from .products import get_product_by_id, ProductItem
 from .embeddings import get_embedding, search_similar_products
@@ -28,6 +29,85 @@ def init_recommender():
     
     client = OpenAI(api_key=api_key)
     logger.info("Recommender initialized with OpenAI client")
+
+async def multimodal_search(query_text: str, image_data: bytes, top_k: int = 5) -> List[Dict[str, Any]]:
+    """
+    Perform multimodal search using text and image.
+    1. Send text + image to GPT-4o for analysis and refined search query generation.
+    2. Use the generated query for semantic search via search_similar_products.
+    """
+    if not client:
+        raise ValueError("Recommender not initialized. Call init_recommender first.")
+
+    try:
+        logger.info(f"Performing multimodal search for text: '{query_text[:50]}...' and image (size: {len(image_data)} bytes)")
+
+        # Encode image to base64
+        base64_image = base64.b64encode(image_data).decode('utf-8')
+
+        # --- Call GPT-4o for analysis ---
+        # This prompt asks the model to describe the item/style and suggest a search query.
+        # Adapt the prompt based on desired output format/detail.
+        vision_prompt = f"""
+        Analyze the following image and the user's text query.
+        The goal is to find similar fashion products from an e-commerce catalog.
+        Describe the key visual elements (item type, style, color, pattern, fabric if discernible) and incorporate the user's text request.
+        Based on this combined understanding, generate a concise and descriptive search query suitable for a vector database search focused on product descriptions.
+        The query should capture the essence of the user's request, merging visual details with textual refinements.
+
+        User Text Query: "{query_text}"
+
+        Output ONLY the generated search query string, nothing else.
+        Example output: "blue summer asymetrical beach dress"
+        """
+        
+        # TODO: Determine appropriate image type (e.g., 'image/jpeg', 'image/png')
+        # For now, assuming JPEG, but ideally, detect or get from frontend.
+        image_type = "image/jpeg"
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": vision_prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:{image_type};base64,{base64_image}"},
+                        },
+                    ],
+                }
+            ],
+            max_tokens=100 # Limit response length for the query
+        )
+
+        generated_query = response.choices[0].message.content.strip()
+        logger.info(f"GPT-4o generated search query: {generated_query}")
+
+        if not generated_query:
+             logger.warning("GPT-4o did not return a usable query. Falling back to original text query.")
+             generated_query = query_text # Fallback or could handle differently
+
+        # --- Perform semantic search using the generated query ---
+        found_products_info = await search_similar_products(query=generated_query, top_k=top_k)
+
+        # Get full product information and add the rating
+        products = []
+        for product_info in found_products_info:
+            product_id = product_info['original_id']
+            product = get_product_by_id(product_id)
+            if product:
+                product_dict = product.dict()
+                product_dict['rating'] = product_info.get('rating', product.rating if product.rating is not None else 0.0)
+                products.append(product_dict)
+
+        logger.info(f"Found {len(products)} products matching multimodal query with ratings")
+        return products
+
+    except Exception as e:
+        logger.error(f"Error in multimodal search: {e}", exc_info=True)
+        return []
 
 async def semantic_search(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     """Perform semantic search on products based on natural language query."""
