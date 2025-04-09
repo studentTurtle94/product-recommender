@@ -181,6 +181,7 @@ async def generate_product_embeddings(products: Optional[List[Dict[str, Any]]] =
                     "categories": ", ".join(product.categories or []),
                     "main_category": product.main_category or "",
                     "has_reviews": product.has_reviews,
+                    "rating": product.rating if product.rating is not None else 0.0,
                     "original_id": str(product_id_any)
                 }
                 # Clean payload: Ensure values are suitable JSON types
@@ -270,8 +271,12 @@ async def generate_product_embeddings(products: Optional[List[Dict[str, Any]]] =
     logger.info(f"Final exact point count in Qdrant collection '{QDRANT_COLLECTION_NAME}': {final_count.count}")
     return True
 
-async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optional[Dict[str, Any]] = None) -> List[str]:
-    """Search for products similar to the query text using Qdrant."""
+async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    """Search for products similar to the query text using Qdrant.
+
+    Returns:
+        A list of dictionaries, each containing 'original_id' and 'rating'.
+    """
     global qdrant_client
     if not openai_client or not qdrant_client:
         raise ValueError("Clients not initialized. Call init_embedding_client first.")
@@ -315,16 +320,20 @@ async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optio
         )
         logger.debug(f"Qdrant search result: {search_result}")
 
-        # 4. Extract original product IDs from the results payload
-        product_ids = []
+        # 4. Extract original product IDs and ratings from the results payload
+        products_found = []
         for hit in search_result:
             if hit.payload and 'original_id' in hit.payload:
-                product_ids.append(hit.payload['original_id'])
+                product_info = {
+                    "original_id": hit.payload['original_id'],
+                    "rating": hit.payload.get('rating', 0.0) # Get rating, default to 0.0
+                }
+                products_found.append(product_info)
             else:
                 logger.warning(f"Search hit {hit.id} missing payload or original_id. Skipping.")
 
-        logger.info(f"Found {len(product_ids)} similar original product IDs: {product_ids}")
-        return product_ids
+        logger.info(f"Found {len(products_found)} similar products with ratings: {products_found}")
+        return products_found
 
     except Exception as e:
         logger.error(f"Error searching Qdrant: {e}", exc_info=True)

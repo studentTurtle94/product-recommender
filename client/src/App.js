@@ -11,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [alternativeSearches, setAlternativeSearches] = useState([]);
+  const [refinedProducts, setRefinedProducts] = useState([]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -27,12 +28,16 @@ function App() {
         }
       });
       
-      setProducts(response.data.products || []);
+      const sortedProducts = response.data.products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      setProducts(sortedProducts);
+      setRefinedProducts(response.data.products);
       setAlternativeSearches(response.data.alternative_searches || []);
+      setError(null);
     } catch (err) {
       console.error('Search error:', err);
       setError('Failed to fetch search results. Please try again.');
       setProducts([]);
+      setRefinedProducts([]);
       setAlternativeSearches([]);
     } finally {
       setLoading(false);
@@ -99,16 +104,19 @@ function App() {
                       }
                     })
                     .then(response => {
-                      setProducts(response.data.products || []);
+                      const sortedProducts = response.data.products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                      setProducts(sortedProducts);
+                      setRefinedProducts(response.data.products);
                       setAlternativeSearches(response.data.alternative_searches || []);
+                      setError(null);
+                      setLoading(false);
                     })
                     .catch(err => {
                       console.error('Search error:', err);
                       setError('Failed to fetch search results. Please try again.');
                       setProducts([]);
+                      setRefinedProducts([]);
                       setAlternativeSearches([]);
-                    })
-                    .finally(() => {
                       setLoading(false);
                     });
                   }}

@@ -37,17 +37,21 @@ async def semantic_search(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     try:
         logger.info(f"Performing semantic search for query: {query}")
         
-        # With our new implementation, search_similar_products handles everything
-        product_ids = await search_similar_products(query, top_k=top_k)
+        # search_similar_products now returns a list of dicts with 'original_id' and 'rating'
+        found_products_info = await search_similar_products(query, top_k=top_k)
         
-        # Get full product information
+        # Get full product information and add the rating
         products = []
-        for product_id in product_ids:
+        for product_info in found_products_info:
+            product_id = product_info['original_id']
             product = get_product_by_id(product_id)
             if product:
-                products.append(product.dict())
+                product_dict = product.dict()
+                # Add the rating fetched from Qdrant payload
+                product_dict['rating'] = product_info.get('rating', product.rating if product.rating is not None else 0.0)
+                products.append(product_dict)
         
-        logger.info(f"Found {len(products)} products matching query")
+        logger.info(f"Found {len(products)} products matching query with ratings")
         return products
     
     except Exception as e:
