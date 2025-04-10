@@ -130,12 +130,6 @@ const ProductCard = ({ product, explanation }) => {
                   </div>
                 )}
                 
-                {reviewData.key_phrases && reviewData.key_phrases.length > 0 && (
-                  <div className="key-phrases">
-                    <p><strong>Common feedback:</strong> {reviewData.key_phrases.slice(0, 3).join(', ')}</p>
-                  </div>
-                )}
-                
                 {reviewData.usage_contexts && reviewData.usage_contexts.length > 0 && (
                   <div className="usage-contexts">
                     <p><strong>Customers use this for:</strong> {reviewData.usage_contexts.slice(0, 2).join(', ')}</p>

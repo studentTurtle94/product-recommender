@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Define paths
 INPUT_FILE = Path("meta_Amazon_Fashion.jsonl")
 OUTPUT_FILE = Path("fashion_products.jsonl")
-SAMPLE_SIZE = 300  # Increased from 3,000 to 30,000 products
+SAMPLE_SIZE = 30000
 
 def get_price_bucket(price):
     """Categorize price into buckets."""
