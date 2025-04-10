@@ -14,6 +14,13 @@ PRODUCTS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data",
 # In-memory product storage
 products_db = {}
 
+# Define a model for the image details within the 'images' list
+class ImageDetail(BaseModel):
+    thumb: Optional[str] = None
+    large: Optional[str] = None
+    variant: Optional[str] = None
+    hi_res: Optional[str] = None
+
 class ProductItem(BaseModel):
     """Model for a fashion product item."""
     id: str
@@ -25,7 +32,8 @@ class ProductItem(BaseModel):
     main_category: Optional[str] = None
     brand: Optional[str] = None
     features: List[str] = Field(default_factory=list)
-    image_url: Optional[str] = None
+    # Replace image_url with a list of images
+    images: List[ImageDetail] = Field(default_factory=list) 
     rating: Optional[float] = None
     has_reviews: bool = False
     
@@ -41,7 +49,7 @@ class ProductItem(BaseModel):
                 "main_category": "Women's Dresses",
                 "brand": "FashionBrand",
                 "features": ["100% Cotton", "Machine Washable", "Various Sizes"],
-                "image_url": "https://example.com/image.jpg",
+                "images": [{"thumb": "https://example.com/thumb.jpg", "large": "https://example.com/large.jpg"}],
                 "rating": 4.5
             }
         }
@@ -75,9 +83,10 @@ def load_products():
                         "price": product_data.get("price", 0.0),
                         "categories": product_data.get("categories", []),
                         "main_category": product_data.get("main_category", ""),
-                        "brand": product_data.get("store", ""),
+                        "brand": product_data.get("store", ""), # Map 'store' to 'brand'
                         "features": product_data.get("features", []),
-                        "image_url": product_data.get("images", [{}])[0].get("large", "") if product_data.get("images") else "",
+                        # Assign the entire images list correctly
+                        "images": product_data.get("images", []), 
                         "rating": product_data.get("average_rating", 0.0),
                         "has_reviews": True  # Assuming we have reviews for all products
                     }

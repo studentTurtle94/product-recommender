@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import './ProductCard.css';
 
 const ProductCard = ({ product, explanation }) => {
+  // Log the number of images
+  console.log(`Product: ${product?.title}, Images: ${product?.images?.length ?? 0}`);
+
   const [reviewData, setReviewData] = useState(null);
   const [showReviews, setShowReviews] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     // Fetch review data if available
@@ -47,8 +51,42 @@ const ProductCard = ({ product, explanation }) => {
     setShowReviews(!showReviews);
   };
 
+  // --- Image Navigation ---
+  const hasImages = product.images && Array.isArray(product.images) && product.images.length > 0;
+
+  const nextImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % product.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (hasImages) {
+      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + product.images.length) % product.images.length);
+    }
+  };
+  // --- End Image Navigation ---
+
   return (
     <div className="product-card">
+      {/* Image Display */}
+      {hasImages && (
+        <div className="product-image-container">
+          <img 
+            src={product.images[currentImageIndex]?.large || product.images[currentImageIndex]?.thumb || 'placeholder.jpg'}
+            alt={`${product.title} - Image ${currentImageIndex + 1}`} 
+            className="product-image" 
+          />
+          {product.images.length > 1 && (
+            <div className="image-nav">
+              <button onClick={prevImage} className="arrow left-arrow">&lt;</button>
+              <button onClick={nextImage} className="arrow right-arrow">&gt;</button>
+            </div>
+          )}
+        </div>
+      )}
+      {/* End Image Display */}
+
       <div className="product-title">{product.title}</div>
       <div className="product-price">{formatPrice(product.price)}</div>
       <div className="product-category">
