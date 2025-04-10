@@ -7,7 +7,6 @@ __pycache__/
 
 # Data files (if large or generated)
 *.jsonl
-data/fashion_products.jsonl
 data/Amazon_Fashion.jsonl
 data/reviews.json
 data/embeddings.json # If using local storage
