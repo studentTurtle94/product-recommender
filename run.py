@@ -10,19 +10,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def main():
-    """Start the FastAPI server with uvicorn."""
-    # Get configuration from environment variables, with defaults
-    port = int(os.environ.get("SERVER_PORT", 8000))
+    """Start the FastAPI server with uvicorn, configured for Render."""
+    # Get Render's PORT environment variable, default to 10000 if not set
+    port = int(os.environ.get("PORT", 10000))
+    # Bind to 0.0.0.0 as required by Render
     host = os.environ.get("SERVER_HOST", "0.0.0.0")
     
     logger.info(f"Starting server on {host}:{port}")
     
-    # Start the uvicorn server
+    # Start the uvicorn server - disabled reload for production
     uvicorn.run(
         "app.main:app",
         host=host,
         port=port,
-        reload=True  # Enable auto-reload during development
+        # reload=False # Explicitly False or remove line
     )
 
 if __name__ == "__main__":
