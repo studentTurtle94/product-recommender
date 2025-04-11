@@ -42,27 +42,45 @@ function App() {
 
     try {
       let response;
-      const endpoint = 'http://localhost:8000/multimodal-search';
-      const formData = new FormData();
-      formData.append('query_text', query);
-      formData.append('limit', 10);
+      const limit = 10; // Define limit
+
       if (selectedFile) {
+        // Use recommend-multimodal endpoint if image is present
+        const endpoint = 'http://localhost:8000/recommend-multimodal';
+        const formData = new FormData();
+        formData.append('query_text', query);
+        formData.append('limit', limit);
         formData.append('image_file', selectedFile);
+
+        response = await axios.post(endpoint, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        console.log('Recommend Multimodal Response:', response.data);
+
+      } else {
+        // Use recommend endpoint if only text is present
+        const endpoint = 'http://localhost:8000/recommend';
+        response = await axios.get(endpoint, {
+          params: {
+            query: query,
+            limit: limit
+          }
+        });
+        console.log('Recommend Text Response:', response.data);
       }
-      response = await axios.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
+
+      // The response structure from /recommend and /recommend-multimodal 
+      // should ideally be consistent (e.g., { products: [...], alternative_searches: [...] })
       const sortedProducts = (response.data.products || []).sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      setProducts(sortedProducts);
-      setRefinedProducts(response.data.products || []);
+      setProducts(sortedProducts); 
+      setRefinedProducts(response.data.products || []); // Assuming refined results are in 'products'
       setAlternativeSearches(response.data.alternative_searches || []);
       setError(null);
     } catch (err) {
-      console.error('Multimodal search error:', err);
-      setError('Failed to fetch search results. Please try again.');
+      console.error('Recommendation search error:', err);
+      setError('Failed to fetch recommendations. Please try again.');
       setProducts([]);
       setRefinedProducts([]);
       setAlternativeSearches([]);

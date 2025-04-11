@@ -46,19 +46,26 @@ async def multimodal_search(query_text: str, image_data: bytes, top_k: int = 5) 
         base64_image = base64.b64encode(image_data).decode('utf-8')
 
         # --- Call GPT-4o for analysis ---
-        # This prompt asks the model to describe the item/style and suggest a search query.
-        # Adapt the prompt based on desired output format/detail.
+        # This prompt is updated to prioritize the text query's intent, using the image as context.
         vision_prompt = f"""
-        Analyze the following image and the user's text query.
-        The goal is to find similar fashion products from an e-commerce catalog.
-        Describe the key visual elements (item type, style, color, pattern, fabric if discernible) and incorporate the user's text request.
-        Based on this combined understanding, generate a concise and descriptive search query suitable for a vector database search focused on product descriptions.
-        The query should capture the essence of the user's request, merging visual details with textual refinements.
+        Analyze the user's text query and the provided image of a fashion item.
+        Your goal is to generate an effective search query for a vector database containing fashion product descriptions.
+        The search query should help find items that fulfill the user's textual request, considering the item in the image as context.
+
+        1. Identify the main item shown in the image (e.g., 'black leather jacket', 'floral summer dress', 'running shoes').
+        2. Understand the user's request from the text query (e.g., 'find matching pants', 'suggest accessories', 'look for similar style shoes').
+        3. Combine these insights to create a search query.
+           - If the user asks for items *related* to the image (e.g., accessories, matching items), the query should focus on the requested item type, incorporating style/color cues from the image context.
+           - If the user asks for items *similar* to the image, the query should describe the item in the image, refined by the text query.
 
         User Text Query: "{query_text}"
 
-        Output ONLY the generated search query string, nothing else.
-        Example output: "blue summer asymetrical beach dress"
+        Examples:
+        - Image: Red dress, Text: "accessories for this" -> Query: "elegant accessories for red dress" or "gold jewelry formal"
+        - Image: Blue jeans, Text: "find a top to wear with these" -> Query: "casual top matching blue jeans" or "white blouse"
+        - Image: Black boots, Text: "show me similar boots but brown" -> Query: "brown leather boots similar style"
+
+        Output ONLY the generated search query string, nothing else. Ensure the output is concise and descriptive for a search engine.
         """
         
         # TODO: Determine appropriate image type (e.g., 'image/jpeg', 'image/png')

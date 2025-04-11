@@ -122,7 +122,33 @@ async def search_multimodal(
 
     if not products:
         return {"products": [], "message": "No products found matching your multimodal query"}
-    
-    # TODO: Potentially add refinement step here as well if needed, similar to /recommend endpoint
 
     return {"products": products}
+
+@app.post("/recommend-multimodal")
+async def recommend_multimodal(
+    query_text: str = Form(...),
+    image_file: Optional[UploadFile] = File(None),
+    limit: int = Form(5)
+):
+    """Get refined recommendations using multimodal input (text + optional image)."""
+    # Initial search step (multimodal or text-based fallback)
+    if image_file:
+        # Read image data
+        image_data = await image_file.read()
+        logger.info(f"Received image for multimodal recommendation: {image_file.filename}, size: {len(image_data)} bytes")
+        # Perform multimodal search
+        initial_products = await multimodal_search(query_text=query_text, image_data=image_data, top_k=limit)
+    else:
+        # Fallback to text-based semantic search if no image provided
+        logger.info("No image provided for recommendation, falling back to text-based semantic search.")
+        initial_products = await semantic_search(query=query_text, top_k=limit)
+
+    if not initial_products:
+        return {"products": [], "alternative_searches": [], "message": "No products found matching your initial search"}
+
+    # Refine recommendations using the initial results and the query text
+    logger.info(f"Refining {len(initial_products)} initial results for query: '{query_text}'")
+    refined_result = await refine_recommendations(query=query_text, products=initial_products)
+
+    return refined_result

@@ -18,6 +18,9 @@ load_dotenv()
 # Import reviews module for enhanced embeddings
 from .reviews import enhance_product_embedding_text, product_reviews
 
+# Import product search function for fallback
+from .products import search_products_by_keyword, ProductItem
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -272,7 +275,7 @@ async def generate_product_embeddings(products: Optional[List[Dict[str, Any]]] =
     return True
 
 async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-    """Search for products similar to the query text using Qdrant.
+    """Search for products similar to the query text using Qdrant, with keyword fallback.
 
     Returns:
         A list of dictionaries, each containing 'original_id' and 'rating'.
@@ -281,14 +284,19 @@ async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optio
     if not openai_client or not qdrant_client:
         raise ValueError("Clients not initialized. Call init_embedding_client first.")
 
+    products_found = []
     try:
         # 1. Get the embedding for the query text
         logger.info(f"Getting embedding for search query: '{query[:100]}...'")
         query_embedding = await get_embedding(query)
 
         if not any(query_embedding):
-            logger.error("Failed to get a valid embedding for the search query. Returning empty list.")
-            return []
+            logger.warning("Failed to get a valid embedding for the search query. Attempting keyword fallback.")
+            # Fallback directly if embedding fails
+            keyword_results = search_products_by_keyword(keyword=query, limit=top_k)
+            products_found = [{"original_id": p.id, "rating": p.rating if p.rating is not None else 0.0} for p in keyword_results]
+            logger.info(f"Found {len(products_found)} products via keyword fallback (embedding failure).")
+            return products_found
 
         # 2. Build Qdrant search filter (if filter_dict is provided)
         qdrant_filter = None
@@ -321,7 +329,6 @@ async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optio
         logger.debug(f"Qdrant search result: {search_result}")
 
         # 4. Extract original product IDs and ratings from the results payload
-        products_found = []
         for hit in search_result:
             if hit.payload and 'original_id' in hit.payload:
                 product_info = {
@@ -332,12 +339,28 @@ async def search_similar_products(query: str, top_k: int = 5, filter_dict: Optio
             else:
                 logger.warning(f"Search hit {hit.id} missing payload or original_id. Skipping.")
 
-        logger.info(f"Found {len(products_found)} similar products with ratings: {products_found}")
+        if not products_found:
+            logger.info("Vector search yielded no results. Attempting keyword fallback.")
+            # Fallback if vector search is empty
+            keyword_results = search_products_by_keyword(keyword=query, limit=top_k)
+            products_found = [{"original_id": p.id, "rating": p.rating if p.rating is not None else 0.0} for p in keyword_results]
+            logger.info(f"Found {len(products_found)} products via keyword fallback (empty vector search).")
+        else:
+            logger.info(f"Found {len(products_found)} similar products via vector search.")
+
         return products_found
 
     except Exception as e:
-        logger.error(f"Error searching Qdrant: {e}", exc_info=True)
-        return []
+        logger.error(f"Error during vector search: {e}. Attempting keyword fallback.", exc_info=True)
+        try:
+            # Fallback in case of any exception during vector search
+            keyword_results = search_products_by_keyword(keyword=query, limit=top_k)
+            products_found = [{"original_id": p.id, "rating": p.rating if p.rating is not None else 0.0} for p in keyword_results]
+            logger.info(f"Found {len(products_found)} products via keyword fallback (vector search error).")
+            return products_found
+        except Exception as fallback_e:
+            logger.error(f"Error during keyword fallback search: {fallback_e}", exc_info=True)
+            return [] # Return empty if both searches fail
 
 async def delete_vectors_by_ids(ids: List[str | int]):
     """Delete vectors from the Qdrant collection by their IDs."""
