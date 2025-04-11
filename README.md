@@ -9,9 +9,9 @@ A multimodal semantic fashion recommendation system that uses natural language p
 
 Here are the architecture diagrams for the Fashion Recommender system:
 
-![1.High-level architecture](data/high_level_architecture)
-![2.Create Embeddings Architecture](data/create_embeddings_architecture)
-![3.User Flow Architecture](data/user_flow_architecture)
+![1.High-level architecture](data/high_level_architecture.png)
+![2.Create Embeddings Architecture](data/create_embeddings_architecture.png)
+![3.User Flow Architecture](data/user_flow_architecture.png)
 
 ## Features
 
