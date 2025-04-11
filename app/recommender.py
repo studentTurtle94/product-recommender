@@ -17,7 +17,7 @@ logger.debug("This is a test debug message from app/recommender.py.")
 
 # Global OpenAI client
 client = None
-# Define the OpenAI model name as a constant
+
 OPENAI_MODEL_NAME = "gpt-4o"
 
 # --- Pydantic Model for Refinement Response ---
@@ -73,6 +73,7 @@ async def multimodal_search(query_text: str, image_data: bytes, top_k: int = 5) 
         - Image: Red dress, Text: "accessories for this" -> Query: "elegant red earrings" or "gold jewelry formal"
         - Image: Blue jeans, Text: "find a top to wear with these" -> Query: "casual white top" or "white blouse"
         - Image: Black boots high heels, Text: "show me similar boots but brown" -> Query: "brown leather high heel boots"
+        - Image: Green high heel shoes, Text: "give me pants that go with these" -> Query: "white elegant women pants"
 
         Output ONLY the generated search query string, nothing else. Ensure the output is concise and descriptive for a search engine.
         Do not use the word "similar" or "matching" in the query, query should be very specific to closest fashion item that fits user request.
