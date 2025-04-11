@@ -30,31 +30,23 @@ app.add_middleware(
 )
 
 if os.getenv("SERVE_STATIC_FILES", "false").lower() == "true":
-    # The root directory where Docker copied the ENTIRE build output
-    build_output_dir = "/app/app/static" # Correct path based on your Dockerfile COPY
+    build_output_dir = "/app/app/static" 
 
-    # The path to the 'static' sub-directory WITHIN the build output (contains CSS, JS)
     static_assets_path = os.path.join(build_output_dir, "static")
 
-    # The path to the index.html file WITHIN the build output
     index_html_path = os.path.join(build_output_dir, "index.html")
 
-    # Mount the directory containing CSS/JS files at the '/static' URL path
-    # Ensure this directory actually exists from your React build!
     if os.path.isdir(static_assets_path):
          app.mount("/static", StaticFiles(directory=static_assets_path), name="static")
     else:
          print(f"Warning: Static assets directory not found at {static_assets_path}")
 
-
     # Define the catch-all route to serve index.html for SPA routing
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_react_app(full_path: str):
-        # Check if the index.html file exists at the correct path
         if os.path.exists(index_html_path):
             return FileResponse(index_html_path)
         else:
-            # Provide a more specific error if index.html is missing
             print(f"Error: index.html not found at {index_html_path}")
             return {"message": "Frontend entry point (index.html) not found"}, 404
 
@@ -63,13 +55,9 @@ if os.getenv("SERVE_STATIC_FILES", "false").lower() == "true":
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting Fashion Recommender API...")
-    # Load products from JSON file
     load_products()
-    # Initialize OpenAI client for embeddings
     init_embedding_client()
-    # Initialize recommender
     init_recommender()
-    # Load reviews data (this is already done when reviews module is imported)
     logger.info("Reviews data loaded for enhanced recommendations")
     logger.info("Initialization complete.")
 
@@ -124,6 +112,7 @@ async def recommend(query: str, limit: int = Query(5, ge=1, le=10)):
     # First, perform semantic search
     products = await semantic_search(query, top_k=limit)
     if not products:
+        logger.info("No prods founds")
         return {"products": [], "alternative_searches": [], "message": "No products found matching your query"}
     
     # Then, refine recommendations with LLM

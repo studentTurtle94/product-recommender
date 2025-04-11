@@ -122,11 +122,11 @@ curl -X POST http://localhost:8000/embeddings/generate
 ```
 *(This can take time depending on the number of products)*
 
-The application should now be available at `http://localhost:3000`.
+The application should now be available at `http://localhost:8000`.
 
 ## Sample Usage
 
-Interact with the frontend at `http://localhost:3000` or use the API directly.
+Interact with the frontend at `http://localhost:8000` or use the API directly.
 
 ### Text Queries
 
