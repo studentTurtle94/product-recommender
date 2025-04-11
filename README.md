@@ -93,14 +93,15 @@ To build and run the application using Docker, follow these steps:
    ```
    This command maps port 8000 of the container to port 8000 on your host machine and uses the `.env` file for environment variables.
 
-3. **Access the Application**:
+3. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. You can create a free account at `https://cloud.qdrant.io/` which allows you to create a cluster.
+
+4. **Access the Application**:
    Open your browser and go to `http://localhost:8000/` to access the Fashion Recommender API and the React frontend.
 
 ### Note
 Make sure you have Docker installed and running on your machine. If you encounter any issues, refer to the Docker documentation for troubleshooting.
 
-
-4. **Prepare Data:** (Run these if you have the raw Amazon datasets)
+5. **Prepare Data:** (Run these if you have the raw Amazon datasets)
    * Process product data:
      ```bash
      python data/process_data.py --input path/to/your/product_data.jsonl --output data/fashion_products.json
@@ -110,11 +111,6 @@ Make sure you have Docker installed and running on your machine. If you encounte
      python data/process_reviews.py --input path/to/your/review_data.jsonl --output data/reviews.json
      ```
      *(Ensure `reviews.json` contains reviews relevant to the products in `fashion_products.json`)*
-
-5. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. For local development, you can use Docker:
-```bash
-docker run -p 6333:6333 qdrant/qdrant
-```
 
 6. **Generate Embeddings:** After the server starts, populate the Qdrant collection:
 ```bash
