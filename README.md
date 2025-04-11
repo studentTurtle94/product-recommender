@@ -4,6 +4,15 @@ A multimodal semantic fashion recommendation system that uses natural language p
 
 **Live Client Demo:** [https://product-recommender-client.onrender.com/](https://product-recommender-client.onrender.com/)
 
+
+## Architecture Diagrams
+
+Here are the architecture diagrams for the Fashion Recommender system:
+
+![1.High-level architecture](data/high_level_architecture)
+![2.Create Embeddings Architecture](data/create_embeddings_architecture)
+![3.User Flow Architecture](data/user_flow_architecture)
+
 ## Features
 
 - Natural language search for fashion products
@@ -67,20 +76,31 @@ QDRANT_API_KEY=your_qdrant_api_key_if_any # Optional: API key for Qdrant Cloud o
 QDRANT_COLLECTION_NAME=fashion_products # Or your desired collection name
 ```
 
-### Backend Setup
+### Docker Setup
 
-1. **Create and activate a virtual environment (Recommended):**
+To build and run the application using Docker, follow these steps:
+
+1. **Build the Docker Image**:
+   Navigate to the root of your project directory (where the `Dockerfile` is located) and run:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   docker build -t fashion-recommender .
    ```
 
-2. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+2. **Run the Docker Container**:
+   After the image is built, run the container with the following command:
+   ```bash
+   docker run -p 8000:8000 -e SERVE_STATIC_FILES=true --env-file .env fashion-recommender
+   ```
+   This command maps port 8000 of the container to port 8000 on your host machine and uses the `.env` file for environment variables.
 
-3. **Prepare Data:** (Run these if you have the raw Amazon datasets)
+3. **Access the Application**:
+   Open your browser and go to `http://localhost:8000/` to access the Fashion Recommender API and the React frontend.
+
+### Note
+Make sure you have Docker installed and running on your machine. If you encounter any issues, refer to the Docker documentation for troubleshooting.
+
+
+4. **Prepare Data:** (Run these if you have the raw Amazon datasets)
    * Process product data:
      ```bash
      python data/process_data.py --input path/to/your/product_data.jsonl --output data/fashion_products.json
@@ -91,16 +111,9 @@ pip install -r requirements.txt
      ```
      *(Ensure `reviews.json` contains reviews relevant to the products in `fashion_products.json`)*
 
-4. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. For local development, you can use Docker:
+5. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. For local development, you can use Docker:
 ```bash
 docker run -p 6333:6333 qdrant/qdrant
-```
-
-5. **Start the Backend Server:**
-```bash
-./start.sh
-# Or directly using uvicorn (adjust path if needed):
-# uvicorn app.main:app --host $SERVER_HOST --port $SERVER_PORT --reload
 ```
 
 6. **Generate Embeddings:** After the server starts, populate the Qdrant collection:
@@ -108,23 +121,6 @@ docker run -p 6333:6333 qdrant/qdrant
 curl -X POST http://localhost:8000/embeddings/generate
 ```
 *(This can take time depending on the number of products)*
-
-### Frontend Setup
-
-1. Navigate to the client directory:
-```bash
-cd client
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm start
-```
 
 The application should now be available at `http://localhost:3000`.
 
