@@ -15,6 +15,8 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -46,7 +48,7 @@ function App() {
 
       if (selectedFile) {
         // Use recommend-multimodal endpoint if image is present
-        const endpoint = 'http://localhost:8000/recommend-multimodal';
+        const endpoint = `${API_BASE_URL}/recommend-multimodal`;
         const formData = new FormData();
         formData.append('query_text', query);
         formData.append('limit', limit);
@@ -61,7 +63,7 @@ function App() {
 
       } else {
         // Use recommend endpoint if only text is present
-        const endpoint = 'http://localhost:8000/recommend';
+        const endpoint = `${API_BASE_URL}/recommend`;
         response = await axios.get(endpoint, {
           params: {
             query: query,
@@ -171,7 +173,7 @@ function App() {
                   onClick={() => {
                     setQuery(search);
                     setLoading(true);
-                    axios.get(`http://localhost:8000/search`, {
+                    axios.get(`${API_BASE_URL}/search`, {
                       params: {
                         query: search,
                         limit: 10

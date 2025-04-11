@@ -112,7 +112,6 @@ async def recommend(query: str, limit: int = Query(5, ge=1, le=10)):
     # First, perform semantic search
     products = await semantic_search(query, top_k=limit)
     if not products:
-        logger.info("No prods founds")
         return {"products": [], "alternative_searches": [], "message": "No products found matching your query"}
     
     # Then, refine recommendations with LLM
