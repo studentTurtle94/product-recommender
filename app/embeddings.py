@@ -52,11 +52,17 @@ def init_embedding_client():
         # Initialize Qdrant client
         logger.info(f"Initializing Qdrant client with URL: {QDRANT_URL}")
         logger.debug(f"QDRANT_API_KEY: {'*' * len(QDRANT_API_KEY) if QDRANT_API_KEY else 'None'}")  # Mask the key
-        qdrant_client = QdrantClient(
-            url=QDRANT_URL,
-            api_key=QDRANT_API_KEY,
-            timeout=10.0  # Add a timeout
-        )
+        if QDRANT_API_KEY:
+            qdrant_client = QdrantClient(
+                url=QDRANT_URL,
+                api_key=QDRANT_API_KEY,
+                timeout=10.0  # Add a timeout
+                )
+        else:
+            qdrant_client = QdrantClient(
+                url=QDRANT_URL,
+                timeout=10.0  # Add a timeout
+            )
         logger.info("Qdrant client initialized successfully.")
         
         # Check if the collection exists
