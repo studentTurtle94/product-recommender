@@ -48,8 +48,8 @@ fashion-recommender/
 - Node.js 14+
 - OpenAI API key
 - Qdrant instance (local Docker container or cloud service)
-- Amazon Fashion product data (.jsonl format) - *for `data/process_data.py`*
-- Amazon Fashion review data (.jsonl format) - *for `data/process_reviews.py`*
+- Amazon Fashion product data (.jsonl format), example here: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023 - *for `data/process_data.py`*
+- Amazon Fashion review data (.jsonl format), example here: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023 - *for `data/process_reviews.py`*
 
 ### Environment Setup
 
@@ -69,12 +69,18 @@ QDRANT_COLLECTION_NAME=fashion_products # Or your desired collection name
 
 ### Backend Setup
 
-1. Install Python dependencies:
+1. **Create and activate a virtual environment (Recommended):**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+2. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. **Prepare Data:** (Run these if you have the raw Amazon datasets)
+3. **Prepare Data:** (Run these if you have the raw Amazon datasets)
    * Process product data:
      ```bash
      python data/process_data.py --input path/to/your/product_data.jsonl --output data/fashion_products.json
@@ -85,19 +91,19 @@ pip install -r requirements.txt
      ```
      *(Ensure `reviews.json` contains reviews relevant to the products in `fashion_products.json`)*
 
-3. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. For local development, you can use Docker:
+4. **Start Qdrant:** Ensure your Qdrant instance is running and accessible at the `QDRANT_URL`. For local development, you can use Docker:
 ```bash
 docker run -p 6333:6333 qdrant/qdrant
 ```
 
-4. **Start the Backend Server:**
+5. **Start the Backend Server:**
 ```bash
 ./start.sh
 # Or directly using uvicorn (adjust path if needed):
 # uvicorn app.main:app --host $SERVER_HOST --port $SERVER_PORT --reload
 ```
 
-5. **Generate Embeddings:** After the server starts, populate the Qdrant collection:
+6. **Generate Embeddings:** After the server starts, populate the Qdrant collection:
 ```bash
 curl -X POST http://localhost:8000/embeddings/generate
 ```
@@ -179,7 +185,7 @@ curl -X POST http://localhost:8000/recommend-multimodal \\
   * *Trade-off vs. Pinecone:* Pinecone often handles embedding generation, potentially leading to vendor lock-in and higher costs. Qdrant provides more control over the embedding process and infrastructure.
 * **LLM:** **GPT-4o** serves two main roles:
   1. *Multimodal Query Interpretation:* Analyzing text and images together to generate more contextually relevant search queries for the vector database.
-  2. *Recommendation Refinement:* Reranking initial semantic search results based on the user's specific query nuances and providing natural language explanations for recommendations. Its strong reasoning capabilities are key here.
+  2. *Recommendation Refinement:* Reranking initial semantic search results based on the user's specific query nuances and providing natural language explanations for recommendations. Its cost and strong reasoning capabilities are key here.
 * **Embedding Model:** **`text-embedding-3-small`** was chosen as a balance between performance, cost, and speed. It provides strong semantic understanding for product text and review data at a lower cost and latency compared to larger models.
 * **Review Enhancement:** Product text used for generating embeddings is enriched with key phrases, common usage contexts, and sentiment extracted from customer reviews. This aims to capture nuances not present in standard product descriptions, improving search relevance.
 * **Data Storage:** Currently, product metadata is loaded into memory from a JSON file (`data/fashion_products.json`) on startup.
@@ -188,9 +194,8 @@ curl -X POST http://localhost:8000/recommend-multimodal \\
 ## Future Improvements
 
 * **Multiple Item Search:** Allow users to search for combinations of items (e.g., "find a shirt and pants for a summer party").
-* **Conversational Interaction:** Implement state management to allow users to refine previous search results or build upon recommendations conversationally (potentially using OpenAI's Assistants API or similar).
+* **Conversational Interaction:** Implement state management to allow users to refine previous search results or build upon recommendations conversationally (potentially using OpenAI's Responses API).
 * **Database Integration:** Replace the in-memory product store with a scalable database solution for better performance and scalability.
-* **Image Feature Extraction:** Explore using image embeddings directly (e.g., with CLIP or similar models) in combination with text embeddings for more sophisticated multimodal search, rather than relying solely on LLM interpretation for query generation.
 
 ## Reset Vector Store
 
@@ -220,9 +225,3 @@ python reset_vectors.py
 - **Backend**: FastAPI, Python, OpenAI API (GPT-4o, Embeddings)
 - **Vector Database**: Qdrant
 - **Frontend**: React, JavaScript, CSS
-- **Data Processing**: Pandas (in `data/` scripts)
-- **Text Processing**: NLTK (implied by review processing), Regex
-
-## License
-
-This project is for educational and demonstration purposes only. Product data is sourced from Amazon and should not be used for commercial purposes.
