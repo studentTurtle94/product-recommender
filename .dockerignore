@@ -1,0 +1,15 @@
+# Ignore the .env file
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Node modules and build artifacts
+client/node_modules/
+client/build/
+
+# Ignore any other files or directories you want to exclude
+*.log
+*.DS_Store

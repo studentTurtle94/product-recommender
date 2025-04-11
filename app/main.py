@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
@@ -26,6 +28,36 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+if os.getenv("SERVE_STATIC_FILES", "false").lower() == "true":
+    # The root directory where Docker copied the ENTIRE build output
+    build_output_dir = "/app/app/static" # Correct path based on your Dockerfile COPY
+
+    # The path to the 'static' sub-directory WITHIN the build output (contains CSS, JS)
+    static_assets_path = os.path.join(build_output_dir, "static")
+
+    # The path to the index.html file WITHIN the build output
+    index_html_path = os.path.join(build_output_dir, "index.html")
+
+    # Mount the directory containing CSS/JS files at the '/static' URL path
+    # Ensure this directory actually exists from your React build!
+    if os.path.isdir(static_assets_path):
+         app.mount("/static", StaticFiles(directory=static_assets_path), name="static")
+    else:
+         print(f"Warning: Static assets directory not found at {static_assets_path}")
+
+
+    # Define the catch-all route to serve index.html for SPA routing
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_react_app(full_path: str):
+        # Check if the index.html file exists at the correct path
+        if os.path.exists(index_html_path):
+            return FileResponse(index_html_path)
+        else:
+            # Provide a more specific error if index.html is missing
+            print(f"Error: index.html not found at {index_html_path}")
+            return {"message": "Frontend entry point (index.html) not found"}, 404
+
 
 # Initialize components on startup
 @app.on_event("startup")
